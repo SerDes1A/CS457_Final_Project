@@ -1,3 +1,4 @@
+from db.connection import Database
 from services.authentication import register_user, login_user
 from services.club_service import(
     list_out_clubs, create_club, join_club_request,
@@ -51,6 +52,8 @@ def officer_menu():
           """)
 
 def main():
+    db = Database("localhost", "CS457_HW", "postgres", "D@t@_1")
+
     current_user = None
     while True:
         if not current_user:

@@ -1,13 +1,26 @@
-import psycopg2
-from config import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
+import psycopg
+import logging
 
-def get_connection():
-    conn = psycopg2.connect(
-        dbname = DB_NAME,
-        user = DB_USER,
-        password = DB_PASSWORD,
-        host = DB_HOST,
-        port = DB_PORT
-    )
-    print("connected to database")
-    return conn
+class Database:
+    def __init__(self, host, dbname, user, password, port=5432):
+        self.conn = psycopg.connect(
+            host=host,
+            port=port,
+            dbname=dbname,
+            user=user,
+            password=password
+        )
+    
+    #allow for the execution of queries while logging them
+    def executeQuery(self, query, params=None, fetch='all'):
+        logging.info("Executing query: %s | parameters: %s", query.strip(), params)
+        with self.conn.cursor() as cur:
+            cur.execute(query,params or ())
+            if fetch == 'one':
+                return cur.fetchone()
+            elif fetch == 'all':
+                return cur.fetchall()
+            return None
+        
+    def close(self):
+        self.conn.close() #close the database connection

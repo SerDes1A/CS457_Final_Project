@@ -1,25 +1,12 @@
-from db.connection import get_connection
-from logger import log_query
+from db.connection import db
 
 def fetch_one(sql, params=None):
-    log_query(sql, params)
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(sql, params or())
-            return cur.fetchone()
-        
+    return db.executeQuery(sql, params, fetch="one")
+
 def fetch_all(sql, params=None):
-    log_query(sql, params)
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(sql, params or())
-            return cur.fetchall()
-        
+    return db.executeQuery(sql, params, fetch="all")
+
 def execute(sql, params=None, returning=False):
-    log_query(sql, params)
-    with get_connection() as conn:
-        with conn.cursor()as cur:
-            cur.execute(sql, params or())
-            if returning:
-                return cur.fetchone()
-            conn.commit()
+    result = db.executeQuery(sql, params, fetch="one" if returning else None)
+    db.conn.commit()
+    return result

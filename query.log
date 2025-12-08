@@ -22,3 +22,7 @@
     SELECT * FROM "User"
     WHERE school_email = %s; 
      | PARAMS: ('aantes@unr.edu',)
+2025-12-08 06:22:18,873 | INFO | SQL: 
+    SELECT * FROM "User"
+    WHERE school_email = %s; 
+     | PARAMS: ('aantes@unr.edu',)
