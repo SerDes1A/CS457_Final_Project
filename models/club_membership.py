@@ -61,7 +61,6 @@ def remove_membership(clubid, userid):
     return execute(sql, (clubid, userid), returning=True)
 
 def mark_dues_paid(club_id, user_id):
-    """Mark a member's dues as paid"""
     sql = """
     UPDATE "Club Membership"
     SET dues_paid = true
@@ -71,7 +70,6 @@ def mark_dues_paid(club_id, user_id):
     return execute(sql, (club_id, user_id), returning=True)
 
 def mark_dues_unpaid(club_id, user_id):
-    """Mark a member's dues as unpaid"""
     sql = """
     UPDATE "Club Membership"
     SET dues_paid = false

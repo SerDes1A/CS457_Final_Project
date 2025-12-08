@@ -2,12 +2,12 @@
 from services.authentication import register_user, login_user
 from services.club_service import(
     list_out_clubs, create_club_service, join_club_request,
-    list_memberships_for_club, get_pending_requests,
+    list_memberships_for_club, list_pending_requests,
     approve_membership_service, promote_member, remove_member, 
     update_club_info_service, check_officer
 )
-from services.event_service import event_creation, list_events
-from services.task_service import task_creation, list_club_tasks, assign_task
+from services.event_service import event_creation, view_event_details_with_clubs
+from services.task_service import task_creation, list_club_tasks, assign_task, view_task_details
 from services.attendance_service import mark_attendance_for_event, list_attendance
 from services.file_service import list_files, upload_file
 from services.dashboard_service import user_dashboard  # New import
@@ -70,7 +70,10 @@ def officer_menu(club_name):
     11. Upload File
     12. Mark Attendance
     13. View Attendance
-    14. Back to Main Menu
+    14. Manage Dues
+    15. Update Task Status
+    16. Edit Task
+    17. Back to Main Menu
     """)
 
 def main():
@@ -132,8 +135,8 @@ def main():
 
             elif choice == "4":  # View Event Details
                 print_header("VIEW EVENT DETAILS")
-                from services.event_service import view_event_details
-                view_event_details()
+                from services.event_service import view_event_details_with_clubs
+                view_event_details_with_clubs()
                 input("\nPress Enter to continue...")
 
             elif choice == "5":  # Create Club
@@ -176,8 +179,8 @@ def main():
                 
             elif choice == "8":  # View My Assigned Tasks
                 print_header("MY ASSIGNED TASKS")
-                from services.task_service import view_my_tasks
-                view_my_tasks(current_user["user_id"])
+                from services.task_service import view_task_details
+                view_task_details(current_user["user_id"])
                 input("\nPress Enter to continue...")
                 
             elif choice == "9":  # Officer Tools
@@ -210,7 +213,7 @@ def main():
                             
                         elif opt == "2":  # View Pending Requests
                             print_header(f"PENDING REQUESTS - {club_name}")
-                            get_pending_requests(current_user, club_id)
+                            list_pending_requests(current_user, club_id)
                             input("\nPress Enter to continue...")
                             
                         elif opt == "3":  # Approve Memberships
@@ -267,15 +270,32 @@ def main():
                             print_header(f"VIEW ATTENDANCE - {club_name}")
                             list_attendance()
                             input("\nPress Enter to continue...")
-                            
-                        elif opt == "14":  # Back to Main Menu
+
+                        elif opt == "14":  # Manage Dues
+                            print_header(f"MANAGE DUES - {club_name}")
+                            from services.club_service import manage_dues
+                            manage_dues(current_user, club_id)
+                            input("\nPress Enter to continue...")
+
+                        elif opt == "15":  # Update Task Status
+                            print_header(f"UPDATE TASK STATUS - {club_name}")
+                            from services.task_service import update_task_status_service
+                            update_task_status_service(current_user)
+                            input("\nPress Enter to continue...")
+
+                        elif opt == "16":  # Edit Task
+                            print_header(f"EDIT TASK - {club_name}")
+                            from services.task_service import edit_task_service
+                            edit_task_service(current_user)
+                            input("\nPress Enter to continue...")
+
+                        elif opt == "17":  # Back to Main Menu (update this number)
                             print("\nReturning to main menu...")
                             break
-                            
+                                                                                  
                         else:
                             print("\nInvalid option. Please try again.")
-                            input("Press Enter to continue...")
-                            
+                                                
                 except ValueError:
                     print("\n❌ Please enter a valid Club ID (number).")
                     input("Press Enter to continue...")

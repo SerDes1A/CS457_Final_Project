@@ -45,11 +45,9 @@ def update_club_info(club_id, name=None, description=None, activity_status=None)
         return None
     
     params.append(club_id)
-    
     sql = """
     UPDATE "Club" 
-    SET """ + ', '.join(parts) + """
-    WHERE club_id = %s 
+    SET """ + ', '.join(parts) + """ WHERE club_id = %s 
     RETURNING *;
     """
     return execute(sql, tuple(params), returning=True)

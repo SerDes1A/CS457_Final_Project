@@ -31,8 +31,6 @@ def list_tasks(club_id):
     return fetch_all(sql, (club_id,))
 
 def update_task_status(task_id, new_status):
-    """Update task status"""
-    # Validate status
     valid_statuses = ['Not Started', 'In Progress', 'Complete']
     if new_status not in valid_statuses:
         raise ValueError(f"Status must be one of: {', '.join(valid_statuses)}")
@@ -46,7 +44,6 @@ def update_task_status(task_id, new_status):
     return execute(sql, (new_status, task_id), returning=True)
 
 def update_task(task_id, title=None, description=None, due_date=None, priority=None):
-    """Update task information"""
     updates = []
     params = []
     
@@ -60,7 +57,6 @@ def update_task(task_id, title=None, description=None, due_date=None, priority=N
         updates.append("due_date = %s")
         params.append(due_date)
     if priority is not None:
-        # Capitalize priority
         priority = priority.capitalize()
         valid_priorities = ['Low', 'Medium', 'High']
         if priority not in valid_priorities:

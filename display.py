@@ -7,24 +7,18 @@ def display_table(data, columns, title=None):
         print(f"\n{title}")
         print("=" * 60)
     
-    # Calculate column widths
     col_widths = {}
     for col in columns:
-        # Start with column name width
         col_widths[col] = len(col)
-        # Check data for this column
         for row in data:
             if col in row and row[col] is not None:
                 col_widths[col] = max(col_widths[col], len(str(row[col])))
-        # Add some padding
         col_widths[col] = min(col_widths[col] + 2, 30)
     
-    # Print header
     header = " | ".join([f"{col:<{col_widths[col]}}" for col in columns])
     print(header)
     print("-" * len(header))
     
-    # Print rows
     for row in data:
         row_display = []
         for col in columns:
@@ -63,12 +57,10 @@ def select_from_list(items, prompt="Select an option:", display_func=None):
             print("Please enter a valid number.")
 
 def confirm_action(prompt="Are you sure?"):
-    """Get confirmation from user"""
     response = input(f"{prompt} (yes/no): ").strip().lower()
     return response in ['yes', 'y']
 
 def format_name(user):
-    """Format user name from dictionary"""
     first = user.get('first_name', '')
     last = user.get('last_name', '')
     email = user.get('school_email', '')
@@ -81,7 +73,6 @@ def format_name(user):
         return f"User ID: {user.get('user_id', 'N/A')}"
 
 def format_club(club):
-    """Format club display"""
     name = club.get('name', 'Unknown')
     status = club.get('activity_status', '')
     club_id = club.get('club_id', '')
@@ -89,3 +80,77 @@ def format_club(club):
     if status:
         return f"{name} [{status}] (ID: {club_id})"
     return f"{name} (ID: {club_id})"
+
+def display_selectable_list(items, title=None, item_formatter=None):
+    """Display items with numbers for selection"""
+    if not items:
+        print("No items available.")
+        return []
+    
+    if title:
+        print(f"\n{title}")
+        print("=" * 60)
+    
+    for i, item in enumerate(items, 1):
+        if item_formatter:
+            print(f"{i:3}. {item_formatter(item)}")
+        else:
+            print(f"{i:3}. {item}")
+    
+    return items
+
+def get_selection_from_list(items, prompt="Enter your choice", allow_cancel=True):
+    """Get user selection from a numbered list"""
+    if not items:
+        return None
+    
+    while True:
+        try:
+            if allow_cancel:
+                choice_input = input(f"\n{prompt} (1-{len(items)}, 0 to cancel): ").strip()
+            else:
+                choice_input = input(f"\n{prompt} (1-{len(items)}): ").strip()
+            
+            if not choice_input:
+                continue
+                
+            choice = int(choice_input)
+            
+            if choice == 0 and allow_cancel:
+                return None
+            
+            if 1 <= choice <= len(items):
+                return items[choice - 1]
+            else:
+                print(f"Please enter a number between 1 and {len(items)}")
+                
+        except ValueError:
+            print("Please enter a valid number.")
+
+def format_task_for_display(task):
+    """Format task for display in selection list"""
+    due_date = task['due_date'].strftime('%b %d, %Y') if task.get('due_date') else "No due date"
+    priority_icon = {
+        'High': '🔴',
+        'Medium': '🟡', 
+        'Low': '🟢'
+    }.get(task.get('priority', 'Medium'), '⚪')
+    
+    status_icon = {
+        'Not Started': '⏸️',
+        'In Progress': '🔄',
+        'Complete': '✅'
+    }.get(task.get('status', 'Not Started'), '❓')
+    
+    return f"{priority_icon} {status_icon} {task['title']:30} | Due: {due_date:15} | Priority: {task.get('priority', 'N/A'):7}"
+
+def format_event_for_display(event):
+    """Format event for display in selection list"""
+    if event.get('start_datetime'):
+        start_time = event['start_datetime'].strftime('%b %d, %Y %I:%M %p')
+    else:
+        start_time = "Date TBD"
+    
+    location = event.get('location', 'Location TBD')[:20]
+    
+    return f"📅 {event['name']:30} | {start_time:25} | {location}"

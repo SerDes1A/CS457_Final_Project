@@ -64,7 +64,6 @@ def approve_membership_service(user, club_id):
     if not check_officer(user, club_id):
         print("Must be an officer to approve memberships.")
         return
-    # Show pending requests first
     rows = get_pending_requests(club_id)
     if not rows:
         print("No pending requests for this club.")
@@ -85,7 +84,6 @@ def promote_member(user, club_id):
     if not check_officer(user, club_id):
         print("Must be an officer to change roles.")
         return
-    # Show current members
     rows = list_memberships(club_id)
     print("Current members:")
     for r in rows:
@@ -105,7 +103,6 @@ def remove_member(user, club_id):
     if not check_officer(user, club_id):
         print("Must be an officer to remove members.")
         return
-    # Show current members
     rows = list_memberships(club_id)
     print("Current members:")
     for r in rows:
@@ -166,13 +163,11 @@ def manage_dues(user, club_id):
             current_status = member.get('dues_paid', False)
             
             if current_status:
-                # Mark as unpaid
                 if confirm_action(f"Mark {member.get('first_name')}'s dues as UNPAID?"):
                     rec = mark_dues_unpaid(club_id, user_id)
                     if rec:
                         print(f"✅ Dues marked as UNPAID for {member.get('first_name')}")
             else:
-                # Mark as paid
                 if confirm_action(f"Mark {member.get('first_name')}'s dues as PAID?"):
                     rec = mark_dues_paid(club_id, user_id)
                     if rec:

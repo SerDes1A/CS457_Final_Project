@@ -6,21 +6,20 @@ def user_dashboard(user_id):
     print("MY DASHBOARD")
     print("="*60)
     
-    # Get user info
+
     user = fetch_one('SELECT * FROM "User" WHERE user_id = %s', (user_id,))
     if user:
         print(f"\n👤 User: {user['first_name']} {user['last_name']}")
         print(f"   Email: {user['school_email']}")
         print(f"   Role: {user['role'].title()}")
     
-    # Get club memberships
-    memberships = fetch_all('''
+    memberships = fetch_all("""
         SELECT cm.*, c.name as club_name
         FROM "Club Membership" cm
         JOIN "Club" c ON cm.clubid = c.club_id
         WHERE cm.userid = %s
         ORDER BY c.name
-    ''', (user_id,))
+    """, (user_id,))
     
     if memberships:
         print(f"\n🏢 Club Memberships ({len(memberships)}):")
@@ -41,18 +40,15 @@ def user_dashboard(user_id):
     else:
         print("\n📭 You are not a member of any clubs yet.")
     
-    # Get upcoming events
-    events = fetch_all('''
+    events = fetch_all("""
         SELECT e.*, c.name as club_name
         FROM "Event" e
         JOIN "Club" c ON e.club = c.club_id
         JOIN "Club Membership" cm ON c.club_id = cm.clubid
-        WHERE cm.userid = %s 
-          AND cm.is_active = true
-          AND e.start_datetime > NOW()
+        WHERE cm.userid = %s AND cm.is_active = true AND e.start_datetime > NOW()
         ORDER BY e.start_datetime
         LIMIT 5
-    ''', (user_id,))
+    """, (user_id,))
     
     if events:
         print(f"\n📅 Upcoming Events ({len(events)}):")
@@ -74,17 +70,15 @@ def user_dashboard(user_id):
         
         display_table(display_data, ['Event', 'Club', 'Date', 'Location'])
     
-    # Get assigned tasks
-    tasks = fetch_all('''
+    tasks = fetch_all("""
         SELECT t.*, c.name as club_name
         FROM "Task" t
         JOIN "Club" c ON t.club = c.club_id
         JOIN "Task Assignment" ta ON t.task_id = ta.task
-        WHERE ta."user" = %s
-          AND t.status != 'Complete'
+        WHERE ta."user" = %s AND t.status != 'Complete'
         ORDER BY t.due_date
         LIMIT 5
-    ''', (user_id,))
+    """, (user_id,))
     
     if tasks:
         print(f"\n📋 Your Tasks ({len(tasks)}):")

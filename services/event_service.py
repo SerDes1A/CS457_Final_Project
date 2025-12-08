@@ -1,5 +1,7 @@
 from models.events import create_event, list_events_for_club, get_event
+from db.db_queries import fetch_all
 from models.club_membership import get_membership
+from models.clubs import get_club_by_id
 from config import OFFICER_ROLES
 from display import display_table
 from input_validation import get_integer_input
@@ -10,17 +12,82 @@ def check_officer(user, club_id):
     return bool(m and m["is_active"] and m["role"] in OFFICER_ROLES)
 
 def event_creation(user):
-    club_id = int(input("Club ID: ").strip())
-    if not check_officer(user, club_id):
-        print("Only officers can create events.")
+    print("\n=== Create New Event ===")
+    
+    officer_clubs = fetch_all('''
+        SELECT c.club_id, c.name 
+        FROM "Club" c
+        JOIN "Club Membership" cm ON c.club_id = cm.clubid
+        WHERE cm.userid = %s 
+          AND cm.is_active = true 
+          AND cm.role IN ('president', 'officer', 'treasurer', 'secretary')
+        ORDER BY c.name
+    ''', (user["user_id"],))
+    
+    if not check_officer:
+        print("You are not an officer of any clubs. Only officers can create events.")
         return
+    
+    print("\nYour Clubs (Officer Access):")
+    print("-" * 50)
+    for i, club in enumerate(officer_clubs, 1):
+        print(f"{i}. {club['name']} (ID: {club['club_id']})")
+    
+    try:
+        choice = int(input(f"\nSelect club (1-{len(officer_clubs)}): ").strip())
+        if 1 <= choice <= len(officer_clubs):
+            club = officer_clubs[choice-1]
+            club_id = club['club_id']
+        else:
+            print("Invalid selection.")
+            return
+    except ValueError:
+        print("Please enter a valid number.")
+        return
+    
+    print(f"\nCreating event for: {club['name']}")
+    print("-" * 40)
+    
     name = input("Event name: ").strip()
-    desc = input("Description: ").strip() or None
-    start = input("Start (YYYY-MM-DD HH:MM, optional): ").strip() or None
-    end = input("End (YYYY-MM-DD HH:MM, optional): ").strip() or None
-    loc = input("Location: ").strip() or None
-    ev = create_event(club_id, name, desc, start, end, loc)
-    print("Created event:", ev["event_id"])
+    if not name:
+        print("Event name is required.")
+        return
+    
+    description = input("Description (optional): ").strip() or None
+    
+    print("\nEvent Dates/Times (use YYYY-MM-DD HH:MM format, 24-hour time)")
+    print("Example: 2024-12-25 14:30")
+    
+    start_datetime = input("Start date/time: ").strip()
+    if not start_datetime:
+        print("Start date/time is required.")
+        return
+    
+    end_datetime = input("End date/time (optional): ").strip() or None
+    location = input("Location (optional): ").strip() or None
+    
+    print(f"\nEvent Summary:")
+    print(f"  Club: {club['name']}")
+    print(f"  Name: {name}")
+    if description:
+        print(f"  Description: {description[:50]}...")
+    print(f"  Start: {start_datetime}")
+    if end_datetime:
+        print(f"  End: {end_datetime}")
+    if location:
+        print(f"  Location: {location}")
+    
+    confirm = input("\nCreate this event? (yes/no): ").strip().lower()
+    if confirm != 'yes':
+        print("Event creation cancelled.")
+        return
+    
+    try:
+        ev = create_event(club_id, name, description, start_datetime, end_datetime, location)
+        print(f"\n✅ Event '{ev['name']}' created successfully!")
+        print(f"   Event ID: {ev['event_id']}")
+    except Exception as e:
+        print(f"❌ Error creating event: {e}")
 
 def list_events():
     club_id = (int(input("Club ID: ")).strip())
@@ -29,7 +96,6 @@ def list_events():
         print(f"{r['event_id']:4} | {r['name']} | {r.get('start_datetime')}")
 
 def view_event_details():
-    """View detailed information about an event"""
     print("\n=== View Event Details ===")
     
     event_id = get_integer_input("Event ID: ", min_val=1)
@@ -38,9 +104,7 @@ def view_event_details():
     if not event:
         print("Event not found.")
         return
-    
-    # Get club name
-    from models.clubs import get_club_by_id
+
     club = get_club_by_id(event['club'])
     club_name = club['name'] if club else f"Club ID: {event['club']}"
     print(f"\n📅 EVENT DETAILS")
@@ -61,18 +125,15 @@ def view_event_details():
     print(f"Created: {event.get('created_at', 'Unknown')}")
 
 def list_upcoming_events():
-    """List upcoming events for all clubs"""
     print("\n=== Upcoming Events ===")
-    
-    from db.db_queries import fetch_all
-    events = fetch_all('''
+    events = fetch_all("""
         SELECT e.*, c.name as club_name
         FROM "Event" e
         JOIN "Club" c ON e.club = c.club_id
         WHERE e.start_datetime > NOW()
         ORDER BY e.start_datetime
         LIMIT 20
-    ''')
+        """)
     
     if not events:
         print("No upcoming events.")
@@ -91,4 +152,79 @@ def list_upcoming_events():
         })
     
     display_table(display_data, ['ID', 'Event', 'Club', 'Date', 'Location'], "Upcoming Events")
+
+def view_event_details_with_clubs(user):
+    print("\n=== View Event Details ===")
+    
+    member_clubs = fetch_all('''
+        SELECT c.club_id, c.name 
+        FROM "Club" c
+        JOIN "Club Membership" cm ON c.club_id = cm.clubid
+        WHERE cm.userid = %s AND cm.is_active = true
+        ORDER BY c.name
+    ''', (user["user_id"],))
+    
+    if not member_clubs:
+        print("You are not a member of any clubs.")
+        return
+    
+    print("\nYour Clubs:")
+    print("-" * 50)
+    for i, club in enumerate(member_clubs, 1):
+        print(f"{i}. {club['name']}")
+    
+    try:
+        choice = int(input(f"\nSelect club (1-{len(member_clubs)}): ").strip())
+        if 1 <= choice <= len(member_clubs):
+            club = member_clubs[choice-1]
+            club_id = club['club_id']
+        else:
+            print("Invalid selection.")
+            return
+    except ValueError:
+        print("Please enter a valid number.")
+        return
+    
+    from models.events import list_events_for_club
+    events = list_events_for_club(club_id)
+    
+    if not events:
+        print(f"\nNo events found for {club['name']}.")
+        return
+    
+    print(f"\nEvents for {club['name']}:")
+    print("-" * 50)
+    for i, event in enumerate(events, 1):
+        if event['start_datetime']:
+            date_str = event['start_datetime'].strftime('%b %d, %Y')
+        else:
+            date_str = "Date TBD"
+        print(f"{i}. {event['name']} - {date_str} (ID: {event['event_id']})")
+    
+    try:
+        event_choice = int(input(f"\nSelect event to view details (1-{len(events)}): ").strip())
+        if 1 <= event_choice <= len(events):
+            event = events[event_choice-1]
+            event_id = event['event_id']
+            
+            print(f"\n📅 EVENT DETAILS")
+            print("=" * 50)
+            print(f"Event: {event['name']}")
+            print(f"Club: {club['name']}")
+            print(f"Description: {event.get('description', 'No description')}")
+            
+            if event['start_datetime']:
+                start_time = event['start_datetime'].strftime('%A, %B %d, %Y at %I:%M %p')
+                print(f"Start: {start_time}")
+            
+            if event['end_datetime']:
+                end_time = event['end_datetime'].strftime('%A, %B %d, %Y at %I:%M %p')
+                print(f"End: {end_time}")
+            
+            print(f"Location: {event.get('location', 'TBD')}")
+            print(f"Created: {event.get('created_at', 'Unknown')}")
+        else:
+            print("Invalid selection.")
+    except ValueError:
+        print("Please enter a valid number.")
     

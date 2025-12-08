@@ -12,14 +12,12 @@ def mark_attendance(event_id, user_id, status='Present'):
             print(f"Warning: Invalid status '{status}'. Using 'Present'.")
             status = 'Present'
     
-    # Check if record exists
     existing = fetch_one(
         'SELECT attendance_id FROM "Attendance" WHERE event = %s AND "user" = %s',
         (event_id, user_id)
     )
     
     if existing:
-        # Update existing
         sql = """
         UPDATE "Attendance" 
         SET status = %s, time = NOW()
@@ -28,7 +26,6 @@ def mark_attendance(event_id, user_id, status='Present'):
         """
         return execute(sql, (status, event_id, user_id), returning=True)
     else:
-        # Insert new
         sql = """
         INSERT INTO "Attendance" (event, "user", status, time)
         VALUES (%s, %s, %s, NOW())

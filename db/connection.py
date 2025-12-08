@@ -10,7 +10,7 @@ class Database:
             dbname=dbname,
             user=user,
             password=password,
-            row_factory=rows.dict_row  # Set it here
+            row_factory=rows.dict_row 
         )
     
     def execute_query(self, query, params=None, fetch='all'):

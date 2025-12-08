@@ -1,10 +1,7 @@
-# utils/input_validation.py
 def get_integer_input(prompt, min_val=None, max_val=None, default=None):
     while True:
         try:
             value = input(prompt).strip()
-            
-            # Handle empty input with default
             if not value and default is not None:
                 return default
             
@@ -36,8 +33,6 @@ def get_date_input(prompt, allow_empty=False):
         if not date_pattern.match(value):
             print("Please enter date in YYYY-MM-DD format")
             continue
-            
-        # Basic validation (could add more thorough date validation)
         try:
             year, month, day = map(int, value.split('-'))
             if month < 1 or month > 12 or day < 1 or day > 31:
@@ -66,6 +61,5 @@ def get_datetime_input(prompt, allow_empty=False):
         return value
     
 def confirm_action(prompt="Are you sure?"):
-    """Get confirmation from user"""
     response = input(f"{prompt} (yes/no): ").strip().lower()
     return response in ['yes', 'y']
