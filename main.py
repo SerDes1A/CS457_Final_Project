@@ -1,10 +1,10 @@
 from db.db_queries import fetch_one, fetch_all, execute
 from services.authentication import register_user, login_user
 from services.club_service import(
-    list_out_clubs, create_club, join_club_request,
+    list_out_clubs, create_club_service, join_club_request,
     list_memberships_for_club, get_pending_requests,
     approve_membership, promote_member, remove_member, 
-    update_club_info, check_officer
+    update_club_info_service, check_officer
 )
 from services.event_service import event_creation, list_events
 from services.task_service import task_creation, list_club_tasks, assign_task
@@ -85,20 +85,20 @@ def main():
             if choice == "1": 
                 list_out_clubs()
             elif choice == "2":
-                create_club(current_user)
+                create_club_service(current_user)
             elif choice == "3":
                 join_club_request(current_user)
             elif choice == "4":
                 from models.club_membership import fetch_one, fetch_all, list_memberships
                 from db.db_queries import fetch_all as qfetch_all
                 rows = qfetch_all("""
-                                SELECT cm.*, c.name 
-                                FROM "Club Membership" cm JOIN "Clubs" c ON cm.club_id = c.club_id
-                                WhERE cm.user_id = %s;
-                                """, (current_user["user_id"],))
+                SELECT cm.*, c.name 
+                FROM "Club Membership" cm JOIN "Club" c ON cm.clubid = c.club_id
+                WHERE cm.userid = %s;
+                """, (current_user["user_id"],))
                 for r in rows:
                     status = "active" if r["is_active"] else "pending"
-                    print(f"{r['club_id']:4} | {r['name']} | role: {r['role']} | {status}")
+                    print(f"{r['clubid']:4} | {r['name']} | role: {r['role']} | {status}")
             elif choice == "5":
                 club_id = int(input("Enter Club ID to manage as officer: ").strip())
                 if not check_officer(current_user, club_id):
@@ -110,7 +110,7 @@ def main():
                     if opt == "1":
                         list_memberships_for_club(club_id)
                     elif opt == "2":
-                        get_pending_requests(current_user, club_id)
+                        get_pending_requests(club_id)
                     elif opt == "3":
                         approve_membership(current_user, club_id)
                     elif opt == "4":
@@ -118,7 +118,7 @@ def main():
                     elif opt == "5":
                         remove_member(current_user, club_id)
                     elif opt == "6":
-                        update_club_info(current_user, club_id)
+                        update_club_info_service(current_user, club_id)
                     elif opt == "7":
                         event_creation(current_user)
                     elif opt == "8":

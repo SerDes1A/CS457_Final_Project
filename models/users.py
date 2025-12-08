@@ -2,11 +2,11 @@ from db.db_queries import fetch_one, fetch_all, execute
 
 def create_user(email, pass_hash, first_name = None, last_name = None, role = "student"):
     sql = """
-    INSERT INTO "User" (school_email, password, first_name, last_name, role)
-    VALUES(%s, %s, %s, %s, %s)
+    INSERT INTO "User" (school_email, password, first_name, last_name, role, created_at)
+    VALUES(%s, %s, %s, %s, %s, NOW())
     RETURNING *;
     """
-    return execute(sql, (email, pass_hash, first_name, last_name, role), returning=True)
+    return execute(sql, (email, pass_hash, first_name, last_name, role,), returning=True)
 
 def get_user_by_email(email):
     sql = """

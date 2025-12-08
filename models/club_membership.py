@@ -1,66 +1,66 @@
 from db.db_queries import fetch_one, fetch_all, execute
 
-def add_membership_request(club_id, user_id, role='member'):
+def add_membership_request(clubid, userid, role='member'):
     sql="""
-    INSERT INTO "Club Membership" (club_id, user_id, role, is_active)
-    VALUES (%s, %s, %s, false)
+    INSERT INTO "Club Membership" (clubid, userid, role, is_active, dues_paid)
+    VALUES (%s, %s, %s, false, false)
     RETURNING *;
     """
-    return execute(sql, (club_id, user_id, role), returning=True)
+    return execute(sql, (clubid, userid, role), returning=True)
 
-def add_membership_direct(club_id, user_id, role='member'):
+def add_membership_direct(clubid, userid, role='member'):
     sql = """
-    INSERT INTO "Club Membership" (club_id, user_id, role, is_active)
-    VALUES (%s, %s, %s, true)
+    INSERT INTO "Club Membership" (clubid, userid, role, is_active, dues_paid)
+    VALUES (%s, %s, %s, true, false)
     RETURNING *;
     """
-    return execute(sql, (club_id, user_id, role), returning=True)
+    return execute(sql, (clubid, userid, role), returning=True)
 
-def get_membership(club_id, user_id):
+def get_membership(clubid, userid):
     sql = """
     SELECT * FROM "Club Membership"
-    WHERE club_id = %s AND user_id = %s;
+    WHERE clubid = %s AND userid = %s;
     """
-    return fetch_one(sql, (club_id, user_id))
+    return fetch_one(sql, (clubid, userid))
 
-def list_memberships(club_id):
+def list_memberships(clubid):
     sql = """
     SELECT cm.*, u.first_name, u.last_name, u.school_email
-    FROM "Club Membership" cm JOIN "Users" u 
-    ON cm.user_id = u.user_id WHERE cm.club_id = %s;
+    FROM "Club Membership" cm JOIN "User" u 
+    ON cm.userid = u.user_id WHERE cm.clubid = %s;
     """
-    return fetch_all(sql, (club_id,))
+    return fetch_all(sql, (clubid,))
 
-def get_pending_requests(club_id):
+def get_pending_requests(clubid):
     sql = """
     SELECT cm.*, u.first_name, u.last_name, u.school_email
-    FROM "Club Membership" cm JOIN "Users" u
-    ON cm.user_id = u.user_id WHERE cm.club_id = %s AND cm.is_active = false;
+    FROM "Club Membership" cm JOIN "User" u
+    ON cm.userid = u.user_id WHERE cm.clubid = %s AND cm.is_active = false;
     """
-    return fetch_all(sql, (club_id,))
+    return fetch_all(sql, (clubid,))
 
-def approve_membership(club_id, user_id, role='member'):
+def approve_membership(clubid, userid, role='member'):
     sql = """
     UPDATE "Club Membership" 
     SET is_active=true, role = %s, joined_at = now()
-    WHERE club_id = %s AND user_id = %s
+    WHERE clubid = %s AND userid = %s
     RETURNING *;
     """
-    return execute(sql, (role, club_id, user_id), returning=True)
+    return execute(sql, (role, clubid, userid), returning=True)
 
-def update_membership_role(club_id, user_id, new_role):
+def update_membership_role(clubid, userid, new_role):
     sql = """
     UPDATE "Club Membership"
     SET role = %s 
-    WHERE club_id = %s AND user_id = %s
+    WHERE clubid = %s AND userid = %s
     RETURNING *;
     """
-    return execute(sql, (new_role, club_id, user_id), returning=True)
+    return execute(sql, (new_role, clubid, userid), returning=True)
 
-def remove_membership(club_id, user_id):
+def remove_membership(clubid, userid):
     sql = """
     DELETE FROM "Club Membership"
-    WHERE club_id = %s AND user_id = %s
+    WHERE clubid = %s AND userid = %s
     RETURNING *;
     """
-    return execute(sql, (club_id, user_id), returning=True)
+    return execute(sql, (clubid, userid), returning=True)

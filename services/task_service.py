@@ -12,10 +12,33 @@ def task_creation(user):
     if not check_officer(user, club_id):
         print("Only officers can create tasks.")
         return
+    
     title = input("Title: ").strip()
     description = input("Description: ").strip() or None
-    due_date = input("Due date (YYYY-MM-DD, optional): ").strip() or None
-    priority = input("Priority (low/medium/high): ").strip() or None
+    
+    # due_date is NOT NULL, so require it
+    while True:
+        due_date = input("Due date (YYYY-MM-DD, required): ").strip()
+        if due_date:
+            break
+        print("Due date is required!")
+    
+    priority_map = {
+        'low': 'Low', 'l': 'Low',
+        'medium': 'Medium', 'm': 'Medium',
+        'high': 'High', 'h': 'High'
+    }
+    
+    priority_input = input("Priority (low/medium/high, default=medium): ").strip().lower()
+    
+    if priority_input:
+        priority = priority_map.get(priority_input)
+        if not priority:
+            print("Invalid priority. Using 'Medium'.")
+            priority = 'Medium'
+    else:
+        priority = 'Medium'  # Default
+    
     t = create_task(club_id, title, description, due_date, priority)
     print("Created Task:", t["task_id"], t["title"])
 

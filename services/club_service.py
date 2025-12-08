@@ -12,11 +12,11 @@ def check_officer(user, club_id):
     return bool(m and m["is_active"] and m["role"] in OFFICER_ROLES)
 
 def list_out_clubs():
-    rows = list_clubs(10)
+    rows = list_clubs()
     for r in rows:
         print(f"{r['club_id']:4} | {r['name']} - {r.get('activity_status') or ''}")
 
-def create_club(current_user):
+def create_club_service(current_user):
     name = input("Club name: ").strip()
     if get_club_by_name(name):
         print("Club already exists.")
@@ -46,47 +46,71 @@ def list_memberships_for_club(club_id):
      rows = list_memberships(club_id)
      for r in rows:
         status = "active" if r["is_active"] else "pending"
-        print(f"{r['membership_id']:4} | {r['user_id']:4} | {r.get('first_name')} {r.get('last_name')} | role: {r['role']} | {status}")
+        print(f"{r['membership_id']:4} | {r['userid']:4} | {r.get('first_name')} {r.get('last_name')} | role: {r['role']} | {status}")
 
 def list_pending_requests(user, club_id):
     if not check_officer(user, club_id):
         print("Must be an officer to list pending requests.")
         return
-    rows = list_pending_requests(club_id)
+    rows = get_pending_requests(club_id)
+    if not rows:
+        print("No pending requests for this club.")
+        return
     for r in rows:
-        print(f"{r['membership_id']:4} | {r['user_id']:4} | {r.get('first_name')} {r.get('last_name')} | {r['school_email']}")
+        print(f"{r['membership_id']:4} | {r['userid']:4} | {r.get('first_name')} {r.get('last_name')} | {r['school_email']}")
 
 def approve_membership(user, club_id):
     if not check_officer(user, club_id):
         print("Must be an officer to approve memberships.")
         return
-    get_pending_requests(user, club_id)
+    # Show pending requests first
+    rows = get_pending_requests(club_id)
+    if not rows:
+        print("No pending requests for this club.")
+        return
+    print("Pending requests:")
+    for r in rows:
+        print(f"  User ID: {r['userid']} - {r.get('first_name')} {r.get('last_name')} ({r['school_email']})")
+
     user_id = int(input("User ID to approve: ").strip())
     role = input("Role to assign (member/officer/etc): ").strip() or "member"
     rec = approve_membership(club_id, user_id, role)
     if rec:
         print("Approved membership:", rec["membership_id"], "role:", rec["role"])
     else:
-        print("No pending request found.")
-
+        print("No pending request found for that user.")
+        
 def promote_member(user, club_id):
     if not check_officer(user, club_id):
         print("Must be an officer to change roles.")
         return
-    list_memberships_for_club(club_id)
+    # Show current members
+    rows = list_memberships(club_id)
+    print("Current members:")
+    for r in rows:
+        status = "active" if r["is_active"] else "pending"
+        print(f"  User ID: {r['userid']} - {r.get('first_name')} {r.get('last_name')} ({r['role']}, {status})")
+    
     user_id = int(input("User ID to promote/demote: ").strip())
     new_role = input("New role (member/officer/president/treasurer/secretary): ").strip()
     rec = update_membership_role(club_id, user_id, new_role)
     if rec:
-        print("Updated role: ", rec["user_id"], "=>", rec["role"])
+        print("Updated role: ", rec["userid"], "=>", rec["role"])
     else:
         print("No membership found.")
+
 
 def remove_member(user, club_id):
     if not check_officer(user, club_id):
         print("Must be an officer to remove members.")
         return
-    list_memberships_for_club(club_id)
+    # Show current members
+    rows = list_memberships(club_id)
+    print("Current members:")
+    for r in rows:
+        status = "active" if r["is_active"] else "pending"
+        print(f"  User ID: {r['userid']} - {r.get('first_name')} {r.get('last_name')} ({r['role']}, {status})")
+    
     user_id = int(input("User ID to remove: ").strip())
     rec = remove_membership(club_id, user_id)
     if rec:
@@ -94,14 +118,14 @@ def remove_member(user, club_id):
     else:
         print("No membership found.")
 
-def update_club_info(user, club_id):
+def update_club_info_service(user, club_id):
     if not check_officer(user, club_id):
         print("Must be an officer to update club info.")
         return
     name = input("New name (leave blank to keep): ").strip() or None
-    desc = input("New descritpion (leave blank to keep): ").strip() or None
+    description = input("New description (leave blank to keep): ").strip() or None
     status = input("New activity status (leave blank to keep): ").strip() or None
-    rec = update_club_info(club_id, name, desc, status)
+    rec = update_club_info(club_id, name, description, status)
     if rec:
         print("Updated club:", rec["club_id"], rec["name"])
     else:

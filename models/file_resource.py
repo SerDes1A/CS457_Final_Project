@@ -2,8 +2,8 @@ from db.db_queries import fetch_one, fetch_all, execute
 
 def add_file(club_id, source_url, event_id=None):
     sql = """
-    INSERT INTO "File Resource" (club_id, event_id, source_url)
-    VALUES (%s, %s, %s)
+    INSERT INTO "File Resource" (club, event, source_url, created_at)
+    VALUES (%s, %s, %s, NOW())
     RETURNING*;
     """
     return execute(sql, (club_id, event_id, source_url), returning=True)
@@ -11,7 +11,7 @@ def add_file(club_id, source_url, event_id=None):
 def list_files_for_club(club_id):
     sql = """
     SELECT * FROM "File Resource" 
-    WHERE club_id = %s
+    WHERE club = %s
     ORDER BY created_at DESC;
     """
     return fetch_all(sql, (club_id,))

@@ -1,4 +1,5 @@
 import psycopg
+from psycopg import rows
 import logging
 
 class Database:
@@ -8,10 +9,10 @@ class Database:
             port=port,
             dbname=dbname,
             user=user,
-            password=password
+            password=password,
+            row_factory=rows.dict_row  # Set it here
         )
     
-    #allow for the execution of queries while logging them
     def execute_query(self, query, params=None, fetch='all'):
         logging.info("Executing query: %s | parameters: %s", query.strip(), params)
         with self.conn.cursor() as cur:
@@ -21,9 +22,9 @@ class Database:
             elif fetch == 'all':
                 return cur.fetchall()
             return None
-
+    
     def close(self):
-        self.conn.close() #close the database connection
+        self.conn.close()
 
 db = Database(
     host="localhost",
