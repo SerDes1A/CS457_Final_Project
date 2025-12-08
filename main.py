@@ -58,7 +58,7 @@ def main():
                 current_user = login_user()
             elif choice == "3":
                 list_out_clubs()
-            elif choice == "4"
+            elif choice == "4":
                 print("You must be logged in to create a club.")
                 continue
             elif choice == "5":
