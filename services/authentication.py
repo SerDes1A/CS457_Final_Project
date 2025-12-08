@@ -32,9 +32,13 @@ def login_user():
             return None
     
     password = input("Password: ").strip()
-    if not check_password(password, user["password"]):
-         print("Incorrect password.")
-         return None
+    for i, value in enumerate(user):
+        print(f"  Index {i}: {value}")
     
-    print(f"Welcome, {user.get('first_name') or user['school_email']}")
+    # Try index 2 for password (most common position)
+    if not check_password(password, user[2]):
+        print("Incorrect password.")
+        return None
+    
+    print(f"Welcome, {user[3] or user[1]}")  # user[3] = first_name, user[1] = email
     return user
