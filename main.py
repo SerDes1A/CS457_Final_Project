@@ -52,8 +52,6 @@ def officer_menu():
           """)
 
 def main():
-    db = Database("localhost", "CS457_HW", "postgres", "D@t@_1")
-
     current_user = None
     while True:
         if not current_user:

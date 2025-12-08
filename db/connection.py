@@ -24,3 +24,10 @@ class Database:
         
     def close(self):
         self.conn.close() #close the database connection
+
+db = Database(
+    host="localhost",
+    dbname="yourname",
+    user="youruser",
+    password="yourpassword"
+)
