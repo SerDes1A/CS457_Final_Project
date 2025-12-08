@@ -3,8 +3,9 @@ from models.club_membership import(
     add_membership_direct, add_membership_request,
     get_membership, list_memberships,
     get_pending_requests, approve_membership, update_membership_role,
-    remove_membership
+    remove_membership, mark_dues_paid, mark_dues_unpaid
 )
+from input_validation import confirm_action
 from config import OFFICER_ROLES
 
 def check_officer(user, club_id):
@@ -59,7 +60,7 @@ def list_pending_requests(user, club_id):
     for r in rows:
         print(f"{r['membership_id']:4} | {r['userid']:4} | {r.get('first_name')} {r.get('last_name')} | {r['school_email']}")
 
-def approve_membership(user, club_id):
+def approve_membership_service(user, club_id):
     if not check_officer(user, club_id):
         print("Must be an officer to approve memberships.")
         return
@@ -130,3 +131,53 @@ def update_club_info_service(user, club_id):
         print("Updated club:", rec["club_id"], rec["name"])
     else:
         print("No changes made.")
+
+def manage_dues(user, club_id):
+    if not check_officer(user, club_id):
+        print("Must be an officer to manage dues.")
+        return
+    
+    from models.clubs import get_club_by_id
+    club = get_club_by_id(club_id)
+    if not club:
+        print("Club not found.")
+        return
+    
+    print(f"\n=== Manage Dues - {club['name']} ===")
+    
+    rows = list_memberships(club_id)
+    if not rows:
+        print("No members found.")
+        return
+    
+    print("\nCurrent Members:")
+    for i, r in enumerate(rows, 1):
+        dues_status = "✅ Paid" if r.get('dues_paid') else "❌ Unpaid"
+        print(f"{i}. {r.get('first_name')} {r.get('last_name')} - {r['role']} - Dues: {dues_status}")
+    
+    try:
+        choice = int(input("\nSelect member number to toggle dues status (0 to cancel): ").strip())
+        if choice == 0:
+            return
+        
+        if 1 <= choice <= len(rows):
+            member = rows[choice-1]
+            user_id = member['userid']
+            current_status = member.get('dues_paid', False)
+            
+            if current_status:
+                # Mark as unpaid
+                if confirm_action(f"Mark {member.get('first_name')}'s dues as UNPAID?"):
+                    rec = mark_dues_unpaid(club_id, user_id)
+                    if rec:
+                        print(f"✅ Dues marked as UNPAID for {member.get('first_name')}")
+            else:
+                # Mark as paid
+                if confirm_action(f"Mark {member.get('first_name')}'s dues as PAID?"):
+                    rec = mark_dues_paid(club_id, user_id)
+                    if rec:
+                        print(f"✅ Dues marked as PAID for {member.get('first_name')}")
+        else:
+            print("Invalid selection.")
+    except ValueError:
+        print("Please enter a valid number.")

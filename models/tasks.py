@@ -29,3 +29,56 @@ def list_tasks(club_id):
     ORDER BY due_date;
     """
     return fetch_all(sql, (club_id,))
+
+def update_task_status(task_id, new_status):
+    """Update task status"""
+    # Validate status
+    valid_statuses = ['Not Started', 'In Progress', 'Complete']
+    if new_status not in valid_statuses:
+        raise ValueError(f"Status must be one of: {', '.join(valid_statuses)}")
+    
+    sql = """
+    UPDATE "Task"
+    SET status = %s, updated_at = NOW()
+    WHERE task_id = %s
+    RETURNING *;
+    """
+    return execute(sql, (new_status, task_id), returning=True)
+
+def update_task(task_id, title=None, description=None, due_date=None, priority=None):
+    """Update task information"""
+    updates = []
+    params = []
+    
+    if title is not None:
+        updates.append("title = %s")
+        params.append(title)
+    if description is not None:
+        updates.append("description = %s")
+        params.append(description)
+    if due_date is not None:
+        updates.append("due_date = %s")
+        params.append(due_date)
+    if priority is not None:
+        # Capitalize priority
+        priority = priority.capitalize()
+        valid_priorities = ['Low', 'Medium', 'High']
+        if priority not in valid_priorities:
+            priority = 'Medium'
+        updates.append("priority = %s")
+        params.append(priority)
+    
+    if not updates:
+        return None
+    
+    updates.append("updated_at = NOW()")
+    params.append(task_id)
+    
+    sql = f"""
+    UPDATE "Task"
+    SET {', '.join(updates)}
+    WHERE task_id = %s
+    RETURNING *;
+    """
+    
+    return execute(sql, tuple(params), returning=True)

@@ -39,19 +39,14 @@ def get_pending_requests(clubid):
     """
     return fetch_all(sql, (clubid,))
 
-def approve_membership(clubid, userid, role='member'):
-    sql = """
-    UPDATE "Club Membership" 
-    SET is_active=true, role = %s, joined_at = now()
-    WHERE clubid = %s AND userid = %s
-    RETURNING *;
-    """
-    return execute(sql, (role, clubid, userid), returning=True)
+def approve_membership(club_id, user_id, role='member'):
+    sql = """UPDATE "Club Membership" SET is_active = true, role = %s WHERE clubid = %s AND userid = %s RETURNING *;"""
+    return execute(sql, (role, club_id, user_id), returning=True)
 
 def update_membership_role(clubid, userid, new_role):
     sql = """
     UPDATE "Club Membership"
-    SET role = %s 
+    SET role = %s
     WHERE clubid = %s AND userid = %s
     RETURNING *;
     """
@@ -64,3 +59,23 @@ def remove_membership(clubid, userid):
     RETURNING *;
     """
     return execute(sql, (clubid, userid), returning=True)
+
+def mark_dues_paid(club_id, user_id):
+    """Mark a member's dues as paid"""
+    sql = """
+    UPDATE "Club Membership"
+    SET dues_paid = true
+    WHERE clubid = %s AND userid = %s
+    RETURNING *;
+    """
+    return execute(sql, (club_id, user_id), returning=True)
+
+def mark_dues_unpaid(club_id, user_id):
+    """Mark a member's dues as unpaid"""
+    sql = """
+    UPDATE "Club Membership"
+    SET dues_paid = false
+    WHERE clubid = %s AND userid = %s
+    RETURNING *;
+    """
+    return execute(sql, (club_id, user_id), returning=True)
