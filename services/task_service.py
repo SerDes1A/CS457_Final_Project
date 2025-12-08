@@ -21,7 +21,7 @@ def task_creation(user):
 
 def list_club_tasks():
     club_id = int(input("Club ID: ").strip())
-    rows = list_club_tasks(club_id)
+    rows = list_tasks(club_id)
     for r in rows:
         print(f"{r['task_id']:4} | {r['title']} | due: {r.get('due_date')} | status: {r.get('status')}")
 

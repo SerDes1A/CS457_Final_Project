@@ -12,22 +12,24 @@ class Database:
         )
     
     #allow for the execution of queries while logging them
-    def executeQuery(self, query, params=None, fetch='all'):
+    def execute_query(self, query, params=None, fetch='all'):
         logging.info("Executing query: %s | parameters: %s", query.strip(), params)
         with self.conn.cursor() as cur:
-            cur.execute(query,params or ())
+            cur.execute(query, params or ())
             if fetch == 'one':
                 return cur.fetchone()
             elif fetch == 'all':
                 return cur.fetchall()
             return None
-        
+
     def close(self):
         self.conn.close() #close the database connection
 
 db = Database(
     host="localhost",
-    dbname="yourname",
-    user="youruser",
-    password="yourpassword"
+    port=5432,
+    dbname="CS457_Final",
+    user="postgres",
+    password="D@t@_1"
 )
+

@@ -43,7 +43,7 @@ def join_club_request(current_user):
     print("Membership request recorded. Awaiting approval by officers.")
 
 def list_memberships_for_club(club_id):
-     rows = list_memberships_for_club(club_id)
+     rows = list_memberships(club_id)
      for r in rows:
         status = "active" if r["is_active"] else "pending"
         print(f"{r['membership_id']:4} | {r['user_id']:4} | {r.get('first_name')} {r.get('last_name')} | role: {r['role']} | {status}")

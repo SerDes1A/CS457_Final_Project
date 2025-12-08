@@ -1,4 +1,4 @@
-from db.connection import Database
+from db.db_queries import fetch_one, fetch_all, execute
 from services.authentication import register_user, login_user
 from services.club_service import(
     list_out_clubs, create_club, join_club_request,
