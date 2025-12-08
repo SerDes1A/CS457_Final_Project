@@ -8,6 +8,7 @@ from services.club_service import(
 from services.event_service import event_creation, create_event, list_events
 from services.task_service import task_creation, list_club_tasks, assign_task
 from services.attendance_service import mark_attendance_for_event, list_attendance
+from services.file_service import list_files, upload_file
 
 def main_menu():
     print("""
@@ -26,7 +27,8 @@ def member_menu():
           2. Request to Join a Club
           3. List Events for a Club
           4. List Tasks for a Club
-          5. Logout
+          5. List Files
+          6. Logout
           """)
 
 def officer_menu():
@@ -41,9 +43,11 @@ def officer_menu():
           7. Create Event
           8. Create Task
           9. Assign Task
-          10. Mark Attendance
-          11. List Attendance
-          12. Back to Main
+          10. List Files
+          11. Upload Files
+          12. Mark Attendance
+          13. List Attendance
+          14. Back to Main
           """)
 
 def main():
@@ -121,10 +125,14 @@ def main():
                     elif opt == "9":
                         assign_task(current_user)
                     elif opt == "10":
-                        mark_attendance_for_event()
+                        list_files(club_id)
                     elif opt == "11":
-                        list_attendance()
+                        upload_file(current_user, club_id)
                     elif opt == "12":
+                        mark_attendance_for_event()
+                    elif opt == "13":
+                        list_attendance()
+                    elif opt == "14":
                         break
                     else:
                         print("Invalid option.")
