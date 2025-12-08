@@ -5,7 +5,7 @@ from services.club_service import(
     approve_membership, promote_member, remove_member, 
     update_club_info, check_officer
 )
-from services.event_service import event_creation, create_event, list_events
+from services.event_service import event_creation, list_events
 from services.task_service import task_creation, list_club_tasks, assign_task
 from services.attendance_service import mark_attendance_for_event, list_attendance
 from services.file_service import list_files, upload_file
