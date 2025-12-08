@@ -8,3 +8,16 @@ def create_user(email, pass_hash, first_name = None, last_name = None, role = "s
     """
     return execute(sql, (email, pass_hash, first_name, last_name, role), returning=True)
 
+def get_user_by_email(email):
+    sql = """
+    SELECT * FROM "Users"
+    WHERE school_email = %s; 
+    """
+    return fetch_one(sql, (email,))
+
+def get_user_by_id(user_id):
+    sql = """
+    SELECT * FROM "Users"
+    WHERE user_id = %s;
+    """
+    return fetch_one(sql, (user_id,))
