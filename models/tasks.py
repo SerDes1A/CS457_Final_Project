@@ -1,4 +1,4 @@
-from db_queries import fetch_one, fetch_all, execute
+from db.db_queries import fetch_one, fetch_all, execute
 
 def create_task(club_id, title, description = None, due_date = None, priority = None):
     sql = """

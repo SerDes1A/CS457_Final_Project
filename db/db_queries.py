@@ -1,5 +1,5 @@
-from .connection import get_connection
-from .logger import log_query
+from db.connection import get_connection
+from logger import log_query
 
 def fetch_one(sql, params=None):
     log_query(sql, params)

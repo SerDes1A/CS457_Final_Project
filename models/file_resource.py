@@ -1,4 +1,4 @@
-from db_queries import fetch_one, fetch_all, execute
+from db.db_queries import fetch_one, fetch_all, execute
 
 def add_file(club_id, source_url, event_id=None):
     sql = """
@@ -8,7 +8,7 @@ def add_file(club_id, source_url, event_id=None):
     """
     return execute(sql, (club_id, event_id, source_url), returning=True)
 
-def list_files(club_id):
+def list_files_for_club(club_id):
     sql = """
     SELECT * FROM "File Resource" 
     WHERE club_id = %s

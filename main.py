@@ -89,7 +89,7 @@ def main():
                 join_club_request(current_user)
             elif choice == "4":
                 from models.club_membership import fetch_one, fetch_all, list_memberships
-                from db_queries import fetch_all as qfetch_all
+                from db.db_queries import fetch_all as qfetch_all
                 rows = qfetch_all("""
                                 SELECT cm.*, c.name 
                                 FROM "Club Membership" cm JOIN "Clubs" c ON cm.club_id = c.club_id
@@ -119,7 +119,7 @@ def main():
                     elif opt == "6":
                         update_club_info(current_user, club_id)
                     elif opt == "7":
-                        create_event(current_user)
+                        event_creation(current_user)
                     elif opt == "8":
                         task_creation(current_user)
                     elif opt == "9":

@@ -1,4 +1,4 @@
-from db_queries import fetch_one, fetch_all, execute
+from db.db_queries import fetch_one, fetch_all, execute
 
 def create_event(club_id, name, description, start_datetime, end_datetime, location):
     sql = """

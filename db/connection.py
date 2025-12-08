@@ -9,4 +9,5 @@ def get_connection():
         host = DB_HOST,
         port = DB_PORT
     )
+    print("connected to database")
     return conn

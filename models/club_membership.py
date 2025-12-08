@@ -1,4 +1,4 @@
-from db_queries import fetch_one, fetch_all, execute
+from db.db_queries import fetch_one, fetch_all, execute
 
 def add_membership_request(club_id, user_id, role='member'):
     sql="""

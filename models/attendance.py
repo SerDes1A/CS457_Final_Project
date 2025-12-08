@@ -1,4 +1,4 @@
-from db_queries import fetch_one, fetch_all, execute
+from db.db_queries import fetch_one, fetch_all, execute
 
 def mark_attendance(event_id, user_id, status='attended'):
     sql = """
