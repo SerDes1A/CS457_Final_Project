@@ -2,12 +2,12 @@
 from services.authentication import register_user, login_user
 from services.club_service import(
     list_out_clubs, create_club_service, join_club_request,
-    list_memberships_for_club, list_pending_requests,
+    list_memberships_for_club, list_out_user_clubs,
     approve_membership_service, promote_member, remove_member, 
-    update_club_info_service, check_officer
+    update_club_info_service, check_officer, manage_dues
 )
-from services.event_service import event_creation, view_event_details_with_clubs
-from services.task_service import task_creation, list_club_tasks, assign_task, view_task_details
+from services.event_service import event_creation, view_event_details_with_clubs, list_upcoming_events
+from services.task_service import task_creation, view_my_tasks, assign_task_to_user, view_my_tasks, update_task_status_service, edit_task_service
 from services.attendance_service import mark_attendance_for_event, list_attendance
 from services.file_service import list_files, upload_file
 from services.dashboard_service import user_dashboard  # New import
@@ -17,11 +17,9 @@ from input_validation import get_integer_input  # New import
 import os
 
 def clear_screen():
-    """Clear the console screen"""
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def print_header(title):
-    """Print a formatted header"""
     clear_screen()
     print("╔" + "═" * 58 + "╗")
     print(f"║{title:^58}║")
@@ -49,8 +47,9 @@ def member_menu(current_user):
     6. Request to Join Club
     7. View My Memberships
     8. View My Assigned Tasks
-    9. Officer Tools
-    10. Logout
+    9. Update Task Status
+    10. Officer Tools
+    11. Logout
     """)
 
 def officer_menu(club_name):
@@ -58,22 +57,21 @@ def officer_menu(club_name):
     print_header(f"OFFICER TOOLS: {display_name.upper()}")
     print("""
     1. View Club Members
-    2. View Pending Requests
-    3. Approve Memberships
-    4. Change Member Roles
-    5. Remove Members
-    6. Update Club Info
-    7. Create Event
-    8. Create Task
-    9. Assign Task
-    10. View Files
-    11. Upload File
-    12. Mark Attendance
-    13. View Attendance
-    14. Manage Dues
-    15. Update Task Status
-    16. Edit Task
-    17. Back to Main Menu
+    2. Approve Memberships
+    3. Change Member Roles
+    4. Remove Members
+    5. Update Club Info
+    6. Create Event
+    7. Create Task
+    8. Assign Task
+    9. View Files
+    10. Upload File
+    11. Mark Attendance
+    12. View Attendance
+    13. Manage Dues
+    14. Update Task Status
+    15. Edit Task
+    16. Back to Main Menu
     """)
 
 def main():
@@ -129,14 +127,12 @@ def main():
                 
             elif choice == "3":  # View Upcoming Events
                 print_header("UPCOMING EVENTS")
-                from services.event_service import list_upcoming_events
                 list_upcoming_events()
                 input("\nPress Enter to continue...")
 
             elif choice == "4":  # View Event Details
                 print_header("VIEW EVENT DETAILS")
-                from services.event_service import view_event_details_with_clubs
-                view_event_details_with_clubs()
+                view_event_details_with_clubs(current_user)
                 input("\nPress Enter to continue...")
 
             elif choice == "5":  # Create Club
@@ -152,41 +148,25 @@ def main():
                 
             elif choice == "7":  # View My Memberships
                 print_header("MY CLUB MEMBERSHIPS")
-                rows = qfetch_all("""
-                    SELECT cm.*, c.name 
-                    FROM "Club Membership" cm 
-                    JOIN "Club" c ON cm.clubid = c.club_id
-                    WHERE cm.userid = %s;
-                    """, (current_user["user_id"],))
-                if not rows:
-                    print("\nYou are not a member of any clubs.")
-                else:
-                    from display import display_table
-                    display_data = []
-                    for r in rows:
-                        status = "✅ Active" if r["is_active"] else "⏳ Pending"
-                        role_display = r["role"].title() if r["role"] else "Member"
-                        
-                        display_data.append({
-                            'Club ID': r['clubid'],
-                            'Club Name': r['name'],
-                            'Your Role': role_display,
-                            'Status': status
-                        })
-                    
-                    display_table(display_data, ['Club ID', 'Club Name', 'Your Role', 'Status'])
+                list_out_user_clubs(current_user)
                 input("\nPress Enter to continue...")
                 
             elif choice == "8":  # View My Assigned Tasks
                 print_header("MY ASSIGNED TASKS")
-                from services.task_service import view_task_details
-                view_task_details(current_user["user_id"])
+                view_my_tasks(current_user["user_id"])
                 input("\nPress Enter to continue...")
-                
-            elif choice == "9":  # Officer Tools
+
+            elif choice == "9":  # Update Task Status
+                print_header("UPDATE TASK STATUS")
+                update_task_status_service(current_user)
+                input("\nPress Enter to continue...")  
+
+            elif choice == "10":  # Officer Tools
                 print_header("OFFICER TOOLS")
                 print("Enter the Club ID you want to manage as an officer.")
                 print("(You must be an officer of the club)")
+
+                list_out_user_clubs(current_user)
                 
                 try:
                     club_id = get_integer_input("\nClub ID: ", min_val=1)
@@ -211,85 +191,78 @@ def main():
                             list_memberships_for_club(club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "2":  # View Pending Requests
-                            print_header(f"PENDING REQUESTS - {club_name}")
-                            list_pending_requests(current_user, club_id)
-                            input("\nPress Enter to continue...")
-                            
-                        elif opt == "3":  # Approve Memberships
+                        elif opt == "2":  # Approve Memberships
                             print_header(f"APPROVE MEMBERSHIPS - {club_name}")
                             approve_membership_service(current_user, club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "4":  # Change Member Roles
+                        elif opt == "3":  # Change Member Roles
                             print_header(f"CHANGE MEMBER ROLES - {club_name}")
                             promote_member(current_user, club_id)
                             input("\nPress Enter to continue...")
-                            
-                        elif opt == "5":  # Remove Members
+
+                        elif opt == "4":  # Remove Members
                             print_header(f"REMOVE MEMBERS - {club_name}")
                             remove_member(current_user, club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "6":  # Update Club Info
+                        elif opt == "5":  # Update Club Info
                             print_header(f"UPDATE CLUB INFO - {club_name}")
                             update_club_info_service(current_user, club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "7":  # Create Event
+                        elif opt == "6":  # Create Event
                             print_header(f"CREATE EVENT - {club_name}")
-                            event_creation(current_user)
+                            event_creation(club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "8":  # Create Task
+                        elif opt == "7":  # Create Task
                             print_header(f"CREATE TASK - {club_name}")
-                            task_creation(current_user)
+                            task_creation(club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "9":  # Assign Task
+                        elif opt == "8":  # Assign Task
                             print_header(f"ASSIGN TASK - {club_name}")
-                            assign_task(current_user)
+                            assign_task_to_user(club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "10":  # View Files
+                        elif opt == "9":  # View Files
                             print_header(f"CLUB FILES - {club_name}")
                             list_files(club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "11":  # Upload File
+                        elif opt == "10":  # Upload File
                             print_header(f"UPLOAD FILE - {club_name}")
                             upload_file(current_user, club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "12":  # Mark Attendance
+                        elif opt == "11":  # Mark Attendance
                             print_header(f"MARK ATTENDANCE - {club_name}")
-                            mark_attendance_for_event()
+                            mark_attendance_for_event(club_id)
                             input("\nPress Enter to continue...")
                             
-                        elif opt == "13":  # View Attendance
+                        elif opt == "12":  # View Attendance
                             print_header(f"VIEW ATTENDANCE - {club_name}")
-                            list_attendance()
+                            list_attendance(club_id)
                             input("\nPress Enter to continue...")
 
-                        elif opt == "14":  # Manage Dues
+                        elif opt == "13":  # Manage Dues
                             print_header(f"MANAGE DUES - {club_name}")
-                            from services.club_service import manage_dues
                             manage_dues(current_user, club_id)
                             input("\nPress Enter to continue...")
 
-                        elif opt == "15":  # Update Task Status
+
+                        elif opt == "14":  # Update Task Status
                             print_header(f"UPDATE TASK STATUS - {club_name}")
-                            from services.task_service import update_task_status_service
                             update_task_status_service(current_user)
                             input("\nPress Enter to continue...")
 
-                        elif opt == "16":  # Edit Task
+                        elif opt == "15":  # Edit Task
                             print_header(f"EDIT TASK - {club_name}")
-                            from services.task_service import edit_task_service
                             edit_task_service(current_user)
                             input("\nPress Enter to continue...")
 
-                        elif opt == "17":  # Back to Main Menu (update this number)
+                        elif opt == "16":  # Back to Main Menu (update this number)
                             print("\nReturning to main menu...")
                             break
                                                                                   
@@ -303,7 +276,7 @@ def main():
                     print(f"\n❌ Error: {e}")
                     input("Press Enter to continue...")
                     
-            elif choice == "10":  # Logout
+            elif choice == "11":  # Logout
                 print_header("LOGOUT")
                 print(f"Goodbye, {current_user.get('first_name', current_user['school_email'])}!")
                 current_user = None

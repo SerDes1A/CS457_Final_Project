@@ -1,13 +1,15 @@
 from db.db_queries import fetch_one, fetch_all, execute
 
-def add_file(club_id, source_url, event_id=None):
+#query to add a file
+def add_file(club_id, source_url, name):
     sql = """
-    INSERT INTO "File Resource" (club, event, source_url, created_at)
-    VALUES (%s, %s, %s, NOW())
+    INSERT INTO "File Resource" (club, source_url, created_at, name)
+    VALUES (%s, %s, NOW(), %s)
     RETURNING*;
     """
-    return execute(sql, (club_id, event_id, source_url), returning=True)
+    return execute(sql, (club_id, name, source_url), returning=True)
 
+#query to list out files
 def list_files_for_club(club_id):
     sql = """
     SELECT * FROM "File Resource" 

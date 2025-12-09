@@ -1,5 +1,6 @@
 from db.db_queries import fetch_one, fetch_all, execute
 
+#query to create a task for the club
 def create_task(club_id, title, description = None, due_date = None, priority = 'Medium'):
     if priority:
         priority = priority.capitalize()
@@ -15,6 +16,7 @@ def create_task(club_id, title, description = None, due_date = None, priority = 
     """
     return execute(sql, (club_id, title, description, due_date, priority), returning=True)
 
+#query for getting a task by id
 def get_task(task_id):
     sql = """
     SELECT * FROM "Task"
@@ -22,14 +24,23 @@ def get_task(task_id):
     """
     return fetch_one(sql, (task_id,))
 
+def get_task_by_club(task_id, club_id):
+    sql = """
+    SELECT * FROM "Task"
+    WHERE task_id = %s AND club = %s
+    """
+    return fetch_one(sql, (task_id,club_id))
+
+#query for listing tasks by clubs
 def list_tasks(club_id):
     sql = """
     SELECT * FROM "Task"
-    WHERE club_id = %s
+    WHERE club = %s
     ORDER BY due_date;
     """
     return fetch_all(sql, (club_id,))
 
+#query to update the status of a task
 def update_task_status(task_id, new_status):
     valid_statuses = ['Not Started', 'In Progress', 'Complete']
     if new_status not in valid_statuses:
@@ -43,6 +54,7 @@ def update_task_status(task_id, new_status):
     """
     return execute(sql, (new_status, task_id), returning=True)
 
+#query to update the information of a task
 def update_task(task_id, title=None, description=None, due_date=None, priority=None):
     updates = []
     params = []
@@ -66,7 +78,6 @@ def update_task(task_id, title=None, description=None, due_date=None, priority=N
     
     if not updates:
         return None
-    
     updates.append("updated_at = NOW()")
     params.append(task_id)
     
