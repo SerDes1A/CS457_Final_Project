@@ -55,7 +55,6 @@ def user_dashboard(user_id):
         
         display_data = []
         for e in events:
-            from datetime import datetime
             if e['start_datetime']:
                 date_str = e['start_datetime'].strftime('%b %d, %Y %I:%M %p')
             else:
@@ -65,9 +64,9 @@ def user_dashboard(user_id):
                 'Event': e['name'],
                 'Club': e['club_name'],
                 'Date': date_str,
-                'Location': e.get('location', 'TBD')[:20]
+                'Location': (e.get('location') or 'TBD')[:20]  
             })
-        
+
         display_table(display_data, ['Event', 'Club', 'Date', 'Location'])
     
     tasks = fetch_all("""

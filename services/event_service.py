@@ -22,14 +22,14 @@ def event_creation(club_id):
     print(f"\nCreating event for: {club['name']}")
     print("-" * 40)
     
-    name = input("Event name (0 to cancel): ").strip()
-    if name == 0:
-        return
     while(1):
+        name = input("Event name (0 to cancel): ").strip()
+        if name == "0":
+            return
         if not name:
             print("Event name is required.")
         else:
-            continue
+            break
     
     description = input("Description (optional): ").strip() or None
     
@@ -103,7 +103,7 @@ def list_upcoming_events():
             'Event': e['name'],
             'Club': e['club_name'],
             'Date': start_time,
-            'Location': e.get('location', 'TBD')[:20]
+            'Location': (e.get('location') or 'TBD')[:20]
         })
     
     display_table(display_data, ['ID', 'Event', 'Club', 'Date', 'Location'], "Upcoming Events")
